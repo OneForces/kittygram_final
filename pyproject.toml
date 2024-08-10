@@ -1,0 +1,3 @@
+[tool.isort]
+profile = "django"
+known_local_folder = ["cats"]
