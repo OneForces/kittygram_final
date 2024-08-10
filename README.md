@@ -1,50 +1,89 @@
-# Kittygram
-## �������� �������
+# Kittygram :cat2:
+_Kittygram_ — сайт, на котором пользователи могут публиковать своих кошек, их фото и цвет. Есть возможность добавлять достижения своих кошек и просматривать ленту котов на главной странице сайта.
 
-Kittygram - ���������� ���� ��� ������ ������������ ������� ��������. ��� ��������� ������� ������, ������� ������� �� ������-���������� �� Django � ��������-���������� �� React.
+## Содержимое
+* [Локальный запуск](#локальный-запуск)
+* [Технологии](#технологии)
+* [Автор](#автор)
 
-[![Workflow Status](https://github.com/dariazueva/kittygram_final/actions/workflows/main.yml/badge.svg)](https://github.com/dariazueva/kittygram_final/actions/workflows/main.yml)
 
-### �������� ���������� �������:
+## Локальный запуск:
 
-- ����������� ����� �������������
-- ���� � ����� ������������������ �������������
-- �������� ������ � �������� � �� �������
-- ��������, �������������� � �������� ������ � ��������
-- ���������� � ��������� ���������� �������
 
-### �������� ���� ���������� �������:
+Клонировать репозиторий и перейти в него в командной строке:
 
-django, gunicorn, nginx, docker, react, github actions, node.js, postgresql, djando rest 
-
-### ��� ���������� ������:
-
-#### ���������� �����������.
-```bash
-git clone git@github.com:dariazueva/kittygram_final.git
 ```
-#### ��������� � ���������� ������-���������� �������.
-```bash
-cd kittygram_final/backend/
+git clone 
 ```
-#### �������� ����������� ���������.
-```bash
+
+```
+cd cat_charity_fund
+```
+
+Cоздать и активировать виртуальное окружение:
+
+```
 python3 -m venv venv
 ```
-#### ����������� ����������� ���������.
-```bash
-source venv/bin/activate
+
+* Если у вас Linux/macOS
+
+    ```
+    source venv/bin/activate
+    ```
+
+* Если у вас windows
+
+    ```
+    source venv/scripts/activate
+    ```
+
+Установить зависимости из файла requirements.txt:
+
 ```
-#### ���������� �����������.
-```bash
+python3 -m pip install --upgrade pip
+```
+
+```
 pip install -r requirements.txt
 ```
-#### �������� ���� .env � ��������� ��� ������ ������� �� �������.
-```bash
-POSTGRES_DB=kittygram
-POSTGRES_USER=kittygram_user
-POSTGRES_PASSWORD=kittygram_password
-DB_HOST=kittygram
-DB_PORT=5432
+
+Запустить проект в контейнерах через docker compose:
+
 ```
+docker compose -f docker-compose-kittygram.production.yml up -d
+```
+
+```
+docker compose -f docker-compose-kittygram.production.yml exec backend python manage.py migrate
+```
+
+```
+docker compose -f docker-compose-kittygram.production.yml exec backend python manage.py collectstatic
+```
+
+```
+docker compose -f docker-compose-kittygram.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+```
+
+Локально проект вы можете открыть:
+
+```
+http://127.0.0.1:9000/
+```
+
+## Технологии:
+- Python 3.9
+- Django 3.2.3
+- Pillow 9.0.0
+- DRF 3.12.4
+- Djoser 2.1.0
+- Gunicorn 20.1.0
+- PostgreSQL
+- Nginx
+- Docker compose
+
+## Автор
+* [Макаров Пётр](https://github.com/MakarovPetr2004)
+
 
