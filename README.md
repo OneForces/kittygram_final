@@ -1,89 +1,145 @@
-# Kittygram :cat2:
-_Kittygram_ — сайт, на котором пользователи могут публиковать своих кошек, их фото и цвет. Есть возможность добавлять достижения своих кошек и просматривать ленту котов на главной странице сайта.
+## ОПИСАНИЕ ПРОЕКТА 
 
-## Содержимое
-* [Локальный запуск](#локальный-запуск)
-* [Технологии](#технологии)
-* [Автор](#автор)
+# Kittygram - сервис для любителей котиков.
 
+[![Workflow Status](https://github.com/Timofey3085/kittygram_final/actions/workflows/main.yml/badge.svg)](https://github.com/Timofey3085/kittygram_final/actions/workflows/main.yml)
 
-## Локальный запуск:
+Что умеет проект:
 
+- Добавлять, просматривать, редактировать и удалять котиков.
+- Добавлять новые и присваивать уже существующие достижения. 
+- Просматривать чужих котов и их достижения.
 
-Клонировать репозиторий и перейти в него в командной строке:
+# Установка
+1. Клонируйте репозиторий на свой компьютер:
 
-```
-git clone 
-```
-
-```
-cd cat_charity_fund
-```
-
-Cоздать и активировать виртуальное окружение:
-
-```
-python3 -m venv venv
-```
-
-* Если у вас Linux/macOS
-
+    ```bash
+    git clone git@github.com:Timofey3085/kittygram_final.git
     ```
-    source venv/bin/activate
+    ```bash
+    cd kittygram
     ```
+2. Создайте файл .env и заполните его своими данными. Перечень данных указан в корневой директории проекта в файле .env.example.
 
-* Если у вас windows
+# Создание Docker-образов
+1.  Замените username на ваш логин на DockerHub:
 
-    ```
-    source venv/scripts/activate
+    ```bash
+    cd frontend
+    docker build -t username/kittygram_frontend .
+    cd ../backend
+    docker build -t username/kittygram_backend .
+    cd ../nginx
+    docker build -t username/kittygram_gateway . 
     ```
 
-Установить зависимости из файла requirements.txt:
+2. Загрузите образы на DockerHub:
 
-```
-python3 -m pip install --upgrade pip
-```
+    ```bash
+    docker push username/kittygram_frontend
+    docker push username/kittygram_backend
+    docker push username/kittygram_gateway
+    ```
 
-```
-pip install -r requirements.txt
-```
+# Деплой на сервере
 
-Запустить проект в контейнерах через docker compose:
+1. Подключитесь к удаленному серверу
 
-```
-docker compose -f docker-compose-kittygram.production.yml up -d
-```
+    ```bash
+    ssh -i путь_до_файла_с_SSH_ключом/название_файла_с_SSH_ключом имя_пользователя@ip_адрес_сервера 
+    ```
 
-```
-docker compose -f docker-compose-kittygram.production.yml exec backend python manage.py migrate
-```
+2. Создайте на сервере директорию kittygram через терминал
 
-```
-docker compose -f docker-compose-kittygram.production.yml exec backend python manage.py collectstatic
-```
+    ```bash
+    mkdir kittygram
+    ```
 
-```
-docker compose -f docker-compose-kittygram.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
-```
+3. Установка docker compose на сервер:
 
-Локально проект вы можете открыть:
+    ```bash
+    sudo apt update
+    sudo apt install curl
+    curl -fSL https://get.docker.com -o get-docker.sh
+    sudo sh ./get-docker.sh
+    sudo apt-get install docker-compose-plugin
+    ```
 
-```
-http://127.0.0.1:9000/
-```
+4. В директорию kittygram/ скопируйте файлы docker-compose.production.yml и .env:
 
-## Технологии:
-- Python 3.9
-- Django 3.2.3
-- Pillow 9.0.0
-- DRF 3.12.4
-- Djoser 2.1.0
-- Gunicorn 20.1.0
-- PostgreSQL
-- Nginx
-- Docker compose
+    ```bash
+    scp -i path_to_SSH/SSH_name docker-compose.production.yml username@server_ip:/home/username/kittygram/docker-compose.production.yml
+    * ath_to_SSH — путь к файлу с SSH-ключом;
+    * SSH_name — имя файла с SSH-ключом (без расширения);
+    * username — ваше имя пользователя на сервере;
+    * server_ip — IP вашего сервера.
+    ```
 
-## Автор
-* [Макаров Пётр](https://github.com/MakarovPetr2004)
+5. Запустите docker compose в режиме демона:
 
+    ```bash
+    sudo docker compose -f docker-compose.production.yml up -d
+    ```
 
+6. Выполните миграции, соберите статические файлы бэкенда и скопируйте их в /backend_static/static/:
+
+    ```bash
+    sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+    sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+    sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+    ```
+
+7. На сервере в редакторе nano откройте конфиг Nginx:
+
+    ```bash
+    sudo nano /etc/nginx/sites-enabled/default
+    ```
+
+8. Измените настройки location в секции server:
+
+    ```bash
+    location / {
+        proxy_set_header Host $http_host;
+        proxy_pass http://127.0.0.1:9000;
+    }
+    ```
+
+9. Проверьте работоспособность конфига Nginx:
+
+    ```bash
+    sudo nginx -t
+    ```
+    Если ответ в терминале такой, значит, ошибок нет:
+    ```bash
+    nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+    nginx: configuration file /etc/nginx/nginx.conf test is successful
+    ```
+
+10. Перезапускаем Nginx
+    ```bash
+    sudo service nginx reload
+    ```
+
+### Настройка CI/CD
+
+1. Файл workflow уже написан. Он находится в директории
+
+    ```bash
+    kittygram/.github/workflows/main.yml
+    ```
+
+2. Для адаптации его на своем сервере добавьте секреты в GitHub Actions:
+
+    ```bash
+    DOCKER_USERNAME                # имя пользователя в DockerHub
+    DOCKER_PASSWORD                # пароль пользователя в DockerHub
+    HOST                           # ip_address сервера
+    USER                           # имя пользователя
+    SSH_KEY                        # приватный ssh-ключ (cat ~/.ssh/id_rsa)
+    SSH_PASSPHRASE                 # кодовая фраза (пароль) для ssh-ключа
+
+    TELEGRAM_TO                    # id телеграм-аккаунта (можно узнать у @userinfobot, команда /start)
+    TELEGRAM_TOKEN                 # токен бота (получить токен можно у @BotFather, /token, имя бота)
+    ```
+# Автор
+[Timofey - Razborshchikov](https://github.com/Timofey3085)
